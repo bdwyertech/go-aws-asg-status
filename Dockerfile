@@ -5,7 +5,7 @@ ARG VCS_REF
 RUN CGO_ENABLED=0 GOFLAGS='-mod=vendor' go build -ldflags="-X main.GitCommit=$VCS_REF -X main.ReleaseVer=docker -X main.ReleaseDate=$BUILD_DATE" .
 
 FROM library/alpine:3.11
-COPY --from=better-cfn-signal /go/src/github.com/bdwyertech/aws-asg-status/aws-asg-status /usr/local/bin/
+COPY --from=aws-asg-status /go/src/github.com/bdwyertech/aws-asg-status/aws-asg-status /usr/local/bin/
 
 ARG BUILD_DATE
 ARG VCS_REF
@@ -18,7 +18,7 @@ LABEL org.opencontainers.image.title="bdwyertech/aws-asg-status" \
       org.opencontainers.image.source="https://github.com/bdwyertech/aws-asg-status.git" \
       org.opencontainers.image.revision=$VCS_REF \
       org.opencontainers.image.created=$BUILD_DATE \
-      org.label-schema.name="bdwyertech/better-cfn-signal" \
+      org.label-schema.name="bdwyertech/aws-asg-status" \
       org.label-schema.description="For simplified use of AWS Autoscaling Group Standby functionality" \
       org.label-schema.url="https://hub.docker.com/r/bdwyertech/aws-asg-status" \
       org.label-schema.vcs-url="https://github.com/bdwyertech/aws-asg-status.git"\
