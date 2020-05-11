@@ -4,7 +4,7 @@
 [![](https://images.microbadger.com/badges/image/bdwyertech/aws-asg-status.svg)](https://microbadger.com/images/bdwyertech/aws-asg-status)
 [![](https://images.microbadger.com/badges/version/bdwyertech/aws-asg-status.svg)](https://microbadger.com/images/bdwyertech/aws-asg-status)
 
-This is a tool to update an instances [status within an ASG.](https://docs.aws.amazon.com/autoscaling/ec2/APIReference/API_EnterStandby.html)
+This is a tool to update an instances [status within an ASG.](https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-enter-exit-standby.html)  This can be handy if you have to update or troubleshoot the instance and do not want the instance to serve traffic or be replaced during the process.
 
 ### Supported Arguments
 * `enter-standby`
