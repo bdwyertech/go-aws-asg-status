@@ -39,7 +39,7 @@ func main() {
 	}
 
 	if len(os.Args) == 1 {
-		log.Fatal("Must supply an argument: enter-standby|exit-standby|status")
+		log.Fatal("Must supply an argument: enter-standby|exit-standby|healthy|unhealthy|status")
 	}
 
 	// AWS Session
@@ -131,6 +131,24 @@ func main() {
 			log.Fatal(err)
 		}
 		prettyPrint(activeOut)
+	case "healthy":
+		_, err := asClient.SetInstanceHealth(&autoscaling.SetInstanceHealthInput{
+			HealthStatus:             aws.String("Healthy"),
+			InstanceId:               aws.String(instanceID),
+			ShouldRespectGracePeriod: aws.Bool(false),
+		})
+		if err != nil {
+			log.Fatal(err)
+		}
+	case "unhealthy":
+		_, err := asClient.SetInstanceHealth(&autoscaling.SetInstanceHealthInput{
+			HealthStatus:             aws.String("Unhealthy"),
+			InstanceId:               aws.String(instanceID),
+			ShouldRespectGracePeriod: aws.Bool(false),
+		})
+		if err != nil {
+			log.Fatal(err)
+		}
 	case "status":
 		describeAsgsOut, err := asClient.DescribeAutoScalingGroups(&autoscaling.DescribeAutoScalingGroupsInput{
 			AutoScalingGroupNames: []*string{AsgName},

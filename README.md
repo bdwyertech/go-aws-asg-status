@@ -9,6 +9,8 @@ This is a tool to update an instances [status within an ASG.](https://docs.aws.a
 ### Supported Arguments
 * `enter-standby`
 * `exit-standby`
+* `healthy`
+* `unhealthy`
 * `status`
 
 ### Sample IAM Policy
@@ -29,7 +31,8 @@ This policy is locked down to scope IAM permissions to instances within its own 
             "Effect": "Allow",
             "Action": [
             	"autoscaling:EnterStandby",
-            	"autoscaling:ExitStandby"
+            	"autoscaling:ExitStandby",
+                "autoscaling:SetInstanceHealth"
             ],
             "Resource": "*",
             "Condition": {
