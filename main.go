@@ -17,12 +17,6 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 )
 
-var verFlag = flag.Bool("version", false, "Display version")
-
-var GitCommit string
-var ReleaseVer string
-var ReleaseDate string
-
 func init() {
 	if _, ok := os.LookupEnv("AWS_ASG_STATUS_DEBUG"); ok {
 		log.SetLevel(log.DebugLevel)
@@ -33,7 +27,7 @@ func init() {
 func main() {
 	flag.Parse()
 
-	if *verFlag {
+	if versionFlag {
 		showVersion()
 		os.Exit(0)
 	}
@@ -160,18 +154,6 @@ func main() {
 	default:
 		log.Fatalln("Unknown argument:", os.Args[1])
 	}
-}
-
-func showVersion() {
-	if GitCommit == "" {
-		GitCommit = "DEVELOPMENT"
-	}
-	if ReleaseVer == "" {
-		ReleaseVer = "DEVELOPMENT"
-	}
-	fmt.Println("version:", ReleaseVer)
-	fmt.Println("date:", ReleaseDate)
-	fmt.Println("commit:", GitCommit)
 }
 
 func prettyPrint(obj interface{}) {
