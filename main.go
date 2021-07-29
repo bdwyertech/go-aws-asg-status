@@ -3,10 +3,12 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 
@@ -44,7 +46,10 @@ func main() {
 
 	metadata := ec2metadata.New(sess)
 
-	if !metadata.Available() {
+	awsCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if !metadata.AvailableWithContext(awsCtx) {
 		log.Fatal("EC2 Metadata is not available... Are we running on an EC2 instance?")
 	}
 
