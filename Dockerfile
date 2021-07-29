@@ -1,10 +1,10 @@
-FROM golang:1.14-alpine as aws-asg-status
+FROM golang:1.16-alpine as aws-asg-status
 WORKDIR /go/src/github.com/bdwyertech/aws-asg-status
 COPY . .
 ARG VCS_REF
 RUN CGO_ENABLED=0 GOFLAGS='-mod=vendor' go build -ldflags="-X main.GitCommit=$VCS_REF -X main.ReleaseVer=docker -X main.ReleaseDate=$BUILD_DATE" .
 
-FROM library/alpine:3.11
+FROM library/alpine:3.13
 COPY --from=aws-asg-status /go/src/github.com/bdwyertech/aws-asg-status/aws-asg-status /usr/local/bin/
 
 ARG BUILD_DATE
@@ -21,7 +21,7 @@ LABEL org.opencontainers.image.title="bdwyertech/aws-asg-status" \
       org.label-schema.name="bdwyertech/aws-asg-status" \
       org.label-schema.description="For simplified use of AWS Autoscaling Group Standby functionality" \
       org.label-schema.url="https://hub.docker.com/r/bdwyertech/aws-asg-status" \
-      org.label-schema.vcs-url="https://github.com/bdwyertech/aws-asg-status.git"\
+      org.label-schema.vcs-url="https://github.com/bdwyertech/aws-asg-status.git" \
       org.label-schema.vcs-ref=$VCS_REF \
       org.label-schema.build-date=$BUILD_DATE
 
