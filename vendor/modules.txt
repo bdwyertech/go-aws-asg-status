@@ -1,6 +1,7 @@
-# github.com/aws/aws-sdk-go v1.40.10
+# github.com/aws/aws-sdk-go v1.55.6
 ## explicit
 github.com/aws/aws-sdk-go/aws
+github.com/aws/aws-sdk-go/aws/auth/bearer
 github.com/aws/aws-sdk-go/aws/awserr
 github.com/aws/aws-sdk-go/aws/awsutil
 github.com/aws/aws-sdk-go/aws/client
@@ -41,6 +42,7 @@ github.com/aws/aws-sdk-go/service/autoscaling
 github.com/aws/aws-sdk-go/service/ec2
 github.com/aws/aws-sdk-go/service/sso
 github.com/aws/aws-sdk-go/service/sso/ssoiface
+github.com/aws/aws-sdk-go/service/ssooidc
 github.com/aws/aws-sdk-go/service/sts
 github.com/aws/aws-sdk-go/service/sts/stsiface
 # github.com/jmespath/go-jmespath v0.4.0
@@ -49,6 +51,7 @@ github.com/jmespath/go-jmespath
 ## explicit
 github.com/sirupsen/logrus
 # golang.org/x/sys v0.0.0-20210423082822-04245dca01da
+## explicit
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix
 golang.org/x/sys/windows
