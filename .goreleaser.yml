@@ -1,4 +1,5 @@
 # Encoding: UTF-8
+version: 2
 
 project_name: aws-asg-status
 
@@ -8,7 +9,7 @@ before:
     # - go generate ./...
 builds:
   - env:
-    - CGO_ENABLED=0
+      - CGO_ENABLED=0
     # - GOFLAGS=-mod=vendor
     goos:
       - windows
@@ -33,7 +34,7 @@ archives:
   - name_template: '{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
     format_overrides:
       - goos: windows
-        format: zip
+        formats: ['zip']
     files:
       - ONLY_BINARY*
 
@@ -41,16 +42,16 @@ checksum:
   name_template: 'checksums.txt'
 
 snapshot:
-  name_template: "{{ .Tag }}-next"
+  version_template: '{{ .Tag }}-next'
 
 changelog:
   sort: asc
   filters:
     exclude:
-    - '^docs:'
-    - '^test:'
-    - Merge pull request
-    - Merge branch
+      - '^docs:'
+      - '^test:'
+      - Merge pull request
+      - Merge branch
 
 release:
   # disable: true
