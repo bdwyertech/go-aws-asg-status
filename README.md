@@ -52,3 +52,43 @@ For example, this condition does not work:
 ```
 "autoscaling:ResourceTag/aws:autoscaling:groupName": "${aws:ResourceTag/aws:autoscaling:groupName}"
 ```
+
+
+### Sample Userdata
+
+#### Linux
+```bash
+#!/bin/bash -e
+
+echo 'Do some stuff...'
+
+# Signal Success
+aws-asg-status healthy
+```
+
+#### Windows
+```powershell
+<powershell>
+$ErrorActionPreference = "Stop"
+
+Write-Host 'Do some stuff...'
+
+# Signal Success
+aws-asg-status healthy
+</powershell>
+```
+
+
+### Healthcheck Support
+Optionally, AWS ASG Status can wait for a URL to return a 200 prior to sending a healthy response back to the ASG.
+
+This was intended for use with the [Go-Healthz healthcheck daemon.](https://github.com/bdwyertech/go-healthz)  The concept is similar to [Kubernetes Startup Probes.](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#define-startup-probes)
+
+```bash
+#!/bin/bash -e
+
+echo 'Do some stuff...'
+
+# Mark healthy after waiting up to 10 minutes for the Healthcheck URL to return 200
+aws-asg-status -healthcheck-url http://127.0.0.1:8080 -healthcheck-timeout 10m
+```
