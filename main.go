@@ -59,10 +59,12 @@ func main() {
 
 	imdsClient := imds.New(imds.Options{})
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx := context.Background()
+
+	awsCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	idDoc, err := imdsClient.GetInstanceIdentityDocument(ctx, &imds.GetInstanceIdentityDocumentInput{})
+	idDoc, err := imdsClient.GetInstanceIdentityDocument(awsCtx, &imds.GetInstanceIdentityDocumentInput{})
 	if err != nil {
 		log.Fatalf("failed to get instance identity document: %v", err)
 	}
