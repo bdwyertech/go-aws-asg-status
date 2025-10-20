@@ -18,11 +18,12 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/ec2metadata"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/autoscaling"
-	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/credentials/ec2rolecreds"
+	"github.com/aws/aws-sdk-go-v2/feature/ec2/imds"
+	"github.com/aws/aws-sdk-go-v2/service/autoscaling"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/mattn/go-isatty"
 )
 
@@ -56,62 +57,40 @@ func main() {
 		log.Fatal("Must supply an argument: enter-standby|exit-standby|healthy|unhealthy|status")
 	}
 
-	// AWS Session
-	sess := session.Must(session.NewSessionWithOptions(session.Options{
-		Config:            *aws.NewConfig().WithCredentialsChainVerboseErrors(true),
-		SharedConfigState: session.SharedConfigDisable,
-	}))
+	imdsClient := imds.New(imds.Options{})
 
-	metadata := ec2metadata.New(sess)
-
-	awsCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	if !metadata.AvailableWithContext(awsCtx) {
-		log.Fatal("EC2 Metadata is not available... Are we running on an EC2 instance?")
-	}
-
-	identity, err := metadata.GetInstanceIdentityDocument()
+	idDoc, err := imdsClient.GetInstanceIdentityDocument(ctx, &imds.GetInstanceIdentityDocumentInput{})
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("failed to get instance identity document: %v", err)
 	}
-	instanceID := identity.InstanceID
-	sess.Config = sess.Config.WithRegion(identity.Region)
+	instanceID := idDoc.InstanceID
 
-	ec2client := ec2.New(sess)
+	cfg := aws.Config{
+		Region: idDoc.Region,
+		// We should only ever be using this on EC2 Instances with an Instance Role...
+		Credentials: ec2rolecreds.New(),
+	}
 
-	input := &ec2.DescribeTagsInput{
-		Filters: []*ec2.Filter{
+	var tags []ec2types.TagDescription
+	ec2Client := ec2.NewFromConfig(cfg)
+	paginator := ec2.NewDescribeTagsPaginator(ec2Client, &ec2.DescribeTagsInput{
+		Filters: []ec2types.Filter{
 			{
-				Name: aws.String("resource-id"),
-				Values: []*string{
-					aws.String(instanceID),
-				},
+				Name:   aws.String("resource-id"),
+				Values: []string{instanceID},
 			},
 		},
-	}
+	})
 
-	resp, err := ec2client.DescribeTags(input)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	tags := resp.Tags
-
-	// Handle EC2 API Pagination
-	for {
-		if resp.NextToken == nil {
-			break
-		}
-
-		input.NextToken = resp.NextToken
-
-		resp, err := ec2client.DescribeTags(input)
+	for paginator.HasMorePages() {
+		page, err := paginator.NextPage(ctx)
 		if err != nil {
-			log.Fatal(err)
+			log.Fatalf("failed to describe EC2 tags: %v", err)
 		}
-
-		tags = append(tags, resp.Tags...)
+		tags = append(tags, page.Tags...)
 	}
 
 	var AsgName *string
@@ -126,40 +105,41 @@ func main() {
 		log.Fatal("Required tag: aws:autoscaling:groupName was not present on EC2 Instance!")
 	}
 
-	asClient := autoscaling.New(sess)
+	asgClient := autoscaling.NewFromConfig(cfg)
 
 	// Wait for Healthcheck if configured
 
 	switch os.Args[1] {
 	case "healthy", "":
-		status := aws.String("Healthy")
+		status := "Healthy"
 		var err error
 		if healthcheckUrl != "" {
 			if err = waitUntilHealthy(); err != nil {
 				log.Error(err)
-				status = aws.String("Unhealthy")
+				status = "Unhealthy"
 			}
 		}
-		if _, err = asClient.SetInstanceHealth(&autoscaling.SetInstanceHealthInput{
-			HealthStatus:             status,
-			InstanceId:               aws.String(instanceID),
+		_, err = asgClient.SetInstanceHealth(ctx, &autoscaling.SetInstanceHealthInput{
+			HealthStatus:             &status,
+			InstanceId:               &instanceID,
 			ShouldRespectGracePeriod: aws.Bool(false),
-		}); err != nil {
+		})
+		if err != nil {
 			log.Fatal(err)
 		}
 	case "unhealthy":
-		_, err := asClient.SetInstanceHealth(&autoscaling.SetInstanceHealthInput{
+		_, err := asgClient.SetInstanceHealth(ctx, &autoscaling.SetInstanceHealthInput{
 			HealthStatus:             aws.String("Unhealthy"),
-			InstanceId:               aws.String(instanceID),
+			InstanceId:               &instanceID,
 			ShouldRespectGracePeriod: aws.Bool(false),
 		})
 		if err != nil {
 			log.Fatal(err)
 		}
 	case "enter-standby":
-		standbyOut, err := asClient.EnterStandby(&autoscaling.EnterStandbyInput{
+		standbyOut, err := asgClient.EnterStandby(ctx, &autoscaling.EnterStandbyInput{
 			AutoScalingGroupName:           AsgName,
-			InstanceIds:                    []*string{aws.String(instanceID)},
+			InstanceIds:                    []string{instanceID},
 			ShouldDecrementDesiredCapacity: aws.Bool(true),
 		})
 		if err != nil {
@@ -167,17 +147,17 @@ func main() {
 		}
 		prettyPrint(standbyOut)
 	case "exit-standby":
-		activeOut, err := asClient.ExitStandby(&autoscaling.ExitStandbyInput{
+		activeOut, err := asgClient.ExitStandby(ctx, &autoscaling.ExitStandbyInput{
 			AutoScalingGroupName: AsgName,
-			InstanceIds:          []*string{aws.String(instanceID)},
+			InstanceIds:          []string{instanceID},
 		})
 		if err != nil {
 			log.Fatal(err)
 		}
 		prettyPrint(activeOut)
 	case "status":
-		describeAsgsOut, err := asClient.DescribeAutoScalingGroups(&autoscaling.DescribeAutoScalingGroupsInput{
-			AutoScalingGroupNames: []*string{AsgName},
+		describeAsgsOut, err := asgClient.DescribeAutoScalingGroups(ctx, &autoscaling.DescribeAutoScalingGroupsInput{
+			AutoScalingGroupNames: []string{*AsgName},
 		})
 		if err != nil {
 			log.Fatal(err)
@@ -264,5 +244,6 @@ func waitUntilHealthy() error {
 			time.Sleep(5 * time.Second)
 			continue
 		}
+
 	}
 }
