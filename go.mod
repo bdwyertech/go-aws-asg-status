@@ -6,7 +6,7 @@ require (
 	github.com/aws/aws-sdk-go-v2 v1.41.1
 	github.com/aws/aws-sdk-go-v2/credentials v1.19.7
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.18.17
-	github.com/aws/aws-sdk-go-v2/service/autoscaling v1.62.5
+	github.com/aws/aws-sdk-go-v2/service/autoscaling v1.64.0
 	github.com/aws/aws-sdk-go-v2/service/ec2 v1.279.1
 	github.com/mattn/go-isatty v0.0.20
 	github.com/sirupsen/logrus v1.9.3
