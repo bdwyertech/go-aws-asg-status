@@ -9,7 +9,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/autoscaling v1.62.5
 	github.com/aws/aws-sdk-go-v2/service/ec2 v1.279.1
 	github.com/mattn/go-isatty v0.0.20
-	github.com/sirupsen/logrus v1.9.3
+	github.com/sirupsen/logrus v1.9.4
 )
 
 require (
