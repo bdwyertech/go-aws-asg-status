@@ -53,7 +53,7 @@ func main() {
 		os.Exit(0)
 	}
 
-	if len(os.Args) == 1 && healthcheckUrl == "" {
+	if flag.NArg() == 0 && healthcheckUrl == "" {
 		log.Fatal("Must supply an argument: enter-standby|exit-standby|healthy|unhealthy|status")
 	}
 
@@ -111,7 +111,7 @@ func main() {
 
 	// Wait for Healthcheck if configured
 
-	switch os.Args[1] {
+	switch flag.Arg(0) {
 	case "healthy", "":
 		status := "Healthy"
 		var err error
@@ -166,7 +166,7 @@ func main() {
 		}
 		log.Println(describeAsgsOut)
 	default:
-		log.Fatalln("Unknown argument:", os.Args[1])
+		log.Fatalln("Unknown argument:", flag.Arg(0))
 	}
 }
 
