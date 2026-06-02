@@ -4749,6 +4749,16 @@ func awsAwsquery_serializeDocumentAvailabilityZoneDistribution(v *types.Availabi
 	return nil
 }
 
+func awsAwsquery_serializeDocumentAvailabilityZoneIds(v []string, value query.Value) error {
+	array := value.Array("member")
+
+	for i := range v {
+		av := array.Value()
+		av.String(v[i])
+	}
+	return nil
+}
+
 func awsAwsquery_serializeDocumentAvailabilityZoneIdsLimit1(v []string, value query.Value) error {
 	array := value.Array("member")
 
@@ -6868,6 +6878,13 @@ func awsAwsquery_serializeOpDocumentCreateAutoScalingGroupInput(v *CreateAutoSca
 		}
 	}
 
+	if v.AvailabilityZoneIds != nil {
+		objectKey := object.Key("AvailabilityZoneIds")
+		if err := awsAwsquery_serializeDocumentAvailabilityZoneIds(v.AvailabilityZoneIds, objectKey); err != nil {
+			return err
+		}
+	}
+
 	if v.AvailabilityZoneImpairmentPolicy != nil {
 		objectKey := object.Key("AvailabilityZoneImpairmentPolicy")
 		if err := awsAwsquery_serializeDocumentAvailabilityZoneImpairmentPolicy(v.AvailabilityZoneImpairmentPolicy, objectKey); err != nil {
@@ -6907,6 +6924,11 @@ func awsAwsquery_serializeOpDocumentCreateAutoScalingGroupInput(v *CreateAutoSca
 	if v.DefaultInstanceWarmup != nil {
 		objectKey := object.Key("DefaultInstanceWarmup")
 		objectKey.Integer(*v.DefaultInstanceWarmup)
+	}
+
+	if len(v.DeletionProtection) > 0 {
+		objectKey := object.Key("DeletionProtection")
+		objectKey.String(string(v.DeletionProtection))
 	}
 
 	if v.DesiredCapacity != nil {
@@ -7556,6 +7578,13 @@ func awsAwsquery_serializeOpDocumentDescribeScalingActivitiesInput(v *DescribeSc
 	if v.AutoScalingGroupName != nil {
 		objectKey := object.Key("AutoScalingGroupName")
 		objectKey.String(*v.AutoScalingGroupName)
+	}
+
+	if v.Filters != nil {
+		objectKey := object.Key("Filters")
+		if err := awsAwsquery_serializeDocumentFilters(v.Filters, objectKey); err != nil {
+			return err
+		}
 	}
 
 	if v.IncludeDeletedGroups != nil {
@@ -8442,6 +8471,13 @@ func awsAwsquery_serializeOpDocumentUpdateAutoScalingGroupInput(v *UpdateAutoSca
 		}
 	}
 
+	if v.AvailabilityZoneIds != nil {
+		objectKey := object.Key("AvailabilityZoneIds")
+		if err := awsAwsquery_serializeDocumentAvailabilityZoneIds(v.AvailabilityZoneIds, objectKey); err != nil {
+			return err
+		}
+	}
+
 	if v.AvailabilityZoneImpairmentPolicy != nil {
 		objectKey := object.Key("AvailabilityZoneImpairmentPolicy")
 		if err := awsAwsquery_serializeDocumentAvailabilityZoneImpairmentPolicy(v.AvailabilityZoneImpairmentPolicy, objectKey); err != nil {
@@ -8481,6 +8517,11 @@ func awsAwsquery_serializeOpDocumentUpdateAutoScalingGroupInput(v *UpdateAutoSca
 	if v.DefaultInstanceWarmup != nil {
 		objectKey := object.Key("DefaultInstanceWarmup")
 		objectKey.Integer(*v.DefaultInstanceWarmup)
+	}
+
+	if len(v.DeletionProtection) > 0 {
+		objectKey := object.Key("DeletionProtection")
+		objectKey.String(string(v.DeletionProtection))
 	}
 
 	if v.DesiredCapacity != nil {
